@@ -2,22 +2,29 @@ package com.itheima.tliasweb.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.itheima.tliasweb.mapper.EmpExprMapper;
 import com.itheima.tliasweb.mapper.EmpMapper;
 import com.itheima.tliasweb.pojo.Emp;
+import com.itheima.tliasweb.pojo.EmpExpr;
 import com.itheima.tliasweb.pojo.EmpQueryParam;
 import com.itheima.tliasweb.pojo.PageResult;
 import com.itheima.tliasweb.service.EmpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 @Service
 public class EmpServiceImpl implements EmpService {
     @Autowired
     private EmpMapper empMapper;
+
+     @Autowired
+     private EmpExprMapper empExprMapper;
 
     /**
      *
@@ -71,5 +78,11 @@ public class EmpServiceImpl implements EmpService {
         emp.setUpdateTime(LocalDateTime.now());
         empMapper.insert(emp);
         //2.保存员工的工作经历信息
+        List<EmpExpr> exprList = emp.getExprList();
+        if(!CollectionUtils.isEmpty(exprList)){
+            //遍历集合，设置外键，再批量插入
+          exprList.forEach(expr->expr.setEmpId(emp.getId()));
+           empExprMapper.insertBatch(exprList);
+        }
     }
 }
